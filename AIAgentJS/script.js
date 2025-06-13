@@ -5,10 +5,11 @@ Run this model in Javascript
 */
 import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
+import dotenv from "dotenv";
 
-// To authenticate with the model you will need to generate a personal access token (PAT) in your GitHub settings. 
-// Create your PAT token by following instructions here: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
-const token = "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";
+
+dotenv.config();
+const token = process.env.GITHUB_TOKEN;
 
 export async function main() {
     const client = ModelClient(
@@ -19,7 +20,7 @@ export async function main() {
     const response = await client.path("/chat/completions").post({
         body: {
             messages: [
-                { role: "user", content: "what 5 + 5?" }
+                { role: "user", content: "Tell me about Fifa world club cup 2025?" }
             ],
             model: "deepseek/DeepSeek-R1",
             max_tokens: 2048,
