@@ -13,22 +13,29 @@ client = ChatCompletionsClient(
 
 messages = []
 
-print("Type 'exit' to quit.")
-while True:
-    user_input = input("\nYou: ")
-    if user_input.lower() == "exit":
-        break
+def chat_ai_agent():
+    print("Type 'exit' to quit.")
+    while True:
+        user_input = input("\nYou: ")
+        if user_input.lower() == "exit":
+            break
 
-    messages.append(UserMessage(user_input))
+        messages.append(UserMessage(user_input))
 
-    response = client.complete(
-        messages=messages,
-        model="microsoft/Phi-3-mini-4k-instruct",
-        temperature=0.8,
-        max_tokens=2048,
-        top_p=0.1
-    )
+        response = client.complete(
+            messages=messages,
+            model="microsoft/Phi-3-mini-4k-instruct",
+            temperature=0.8,
+            max_tokens=2048,
+            top_p=0.1
+        )
 
-    assistant_reply = response.choices[0].message.content
-    print("\nAssistant:", assistant_reply)
-    messages.append(AssistantMessage(assistant_reply))
+        assistant_reply = response.choices[0].message.content
+        print("\nAssistant:", assistant_reply)
+        messages.append(AssistantMessage(assistant_reply))
+
+if __name__ == "__main__":
+    try:
+        chat_ai_agent()
+    except:
+        print("\nBye...")
