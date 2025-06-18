@@ -8,7 +8,7 @@ from openai import OpenAI
 load_dotenv()
 token = os.environ["GITHUB_TOKEN"]
 endpoint = "https://models.github.ai/inference"
-model = "openai/gpt-4.1"
+model = "openai/gpt-4o"
 
 client = OpenAI(
     base_url=endpoint,
