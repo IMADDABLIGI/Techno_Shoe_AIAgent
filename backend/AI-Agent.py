@@ -6,13 +6,14 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pymongo import MongoClient
 from typing import List, Dict, Any
+import re
 
 load_dotenv()
 
 # OpenAI Configuration
 token = os.environ["GITHUB_TOKEN"]
 endpoint = "https://models.github.ai/inference"
-model = "openai/gpt-4o"
+model = "openai/gpt-4.1-nano"
 
 client = OpenAI(
     base_url=endpoint,
@@ -33,6 +34,17 @@ def get_db_connection():
 
 # Database instance
 db = get_db_connection()
+
+# Customer state tracking
+customer_state = {
+    "interested_products": [],
+    "conversation_turns": 0,
+    "serious_interest_indicators": 0,
+    "contact_info_requested": False,
+    "contact_info": {},
+    "gathering_contact": False,
+    "contact_step": None  # "first_name", "last_name", "age", "phone"
+}
 
 # Tool Functions
 def search_shoes(brand=None, category=None, price_min=None, price_max=None, color=None, 
@@ -162,6 +174,81 @@ def check_shoe_availability(shoe_name=None, size=None):
     except Exception as e:
         return json.dumps({"error": f"Availability check error: {str(e)}"})
 
+def save_customer_info(first_name, last_name=None, age=None, phone=None, 
+                      interested_products=None, conversation_history=None):
+    """Save customer information to the database"""
+    try:
+        customer_data = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "age": int(age) if age else None,
+            "phone": phone,
+            "interested_products": interested_products or [],
+            "conversation_history": conversation_history or [],
+            "created_at": datetime.now()
+        }
+        
+        # Remove None values
+        customer_data = {k: v for k, v in customer_data.items() if v is not None}
+        
+        result = db.customers.insert_one(customer_data)
+        
+        return json.dumps({
+            "success": True,
+            "customer_id": str(result.inserted_id),
+            "message": "Customer information saved successfully!"
+        })
+        
+    except Exception as e:
+        return json.dumps({
+            "success": False,
+            "error": f"Failed to save customer info: {str(e)}"
+        })
+
+def detect_serious_interest(user_message):
+    """Detect if customer shows serious interest in purchasing"""
+    interest_keywords = [
+        "buy", "purchase", "order", "get this", "take it", "want this",
+        "interested in", "looks good", "perfect", "exactly what", 
+        "how much", "price", "cost", "afford", "budget", "payment",
+        "when can i", "available", "in stock", "reserve", "hold",
+        "size", "fit", "try on", "store location", "pickup", "delivery"
+    ]
+    
+    message_lower = user_message.lower()
+    interest_count = sum(1 for keyword in interest_keywords if keyword in message_lower)
+    
+    return interest_count >= 2 or any(phrase in message_lower for phrase in [
+        "i want", "i'll take", "can i buy", "how do i order", 
+        "where can i", "i need these", "perfect for me"
+    ])
+
+def extract_contact_info(user_message):
+    """Extract contact information from user message"""
+    contact_info = {}
+    
+    # Extract phone number (various formats)
+    phone_patterns = [
+        r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',  # 123-456-7890 or 123.456.7890 or 1234567890
+        r'\(\d{3}\)\s?\d{3}[-.]?\d{4}',    # (123) 456-7890
+        r'\+1\s?\d{3}[-.]?\d{3}[-.]?\d{4}' # +1 123-456-7890
+    ]
+    
+    for pattern in phone_patterns:
+        phone_match = re.search(pattern, user_message)
+        if phone_match:
+            contact_info['phone'] = phone_match.group()
+            break
+    
+    # Extract age (simple number between 16-99)
+    age_match = re.search(r'\b(1[6-9]|[2-9]\d)\b', user_message)
+    if age_match:
+        potential_age = int(age_match.group())
+        if 16 <= potential_age <= 99:
+            contact_info['age'] = potential_age
+    
+    return contact_info
+
 # Tool definitions for OpenAI function calling
 tools = [
     {
@@ -222,6 +309,25 @@ tools = [
                 }
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "save_customer_info",
+            "description": "Save customer contact information and interests to database when they show serious buying intent",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "first_name": {"type": "string", "description": "Customer's first name"},
+                    "last_name": {"type": "string", "description": "Customer's last name"},
+                    "age": {"type": "number", "description": "Customer's age"},
+                    "phone": {"type": "string", "description": "Customer's phone number"},
+                    "interested_products": {"type": "array", "items": {"type": "string"}, "description": "List of products customer is interested in"},
+                    "conversation_history": {"type": "array", "items": {"type": "object"}, "description": "Chat conversation history"}
+                },
+                "required": ["first_name"]
+            }
+        }
     }
 ]
 
@@ -230,12 +336,13 @@ available_functions = {
     "search_shoes": search_shoes,
     "get_shoe_recommendations": get_shoe_recommendations,
     "get_brands_and_categories": get_brands_and_categories,
-    "check_shoe_availability": check_shoe_availability
+    "check_shoe_availability": check_shoe_availability,
+    "save_customer_info": save_customer_info
 }
 
-# Initialize conversation history with e-commerce context
+# Initialize conversation history with enhanced e-commerce context
 conversation_history = [
-    {"role": "system", "content": """You are a helpful AI shopping assistant for a shoe store. Your goal is to help customers find the perfect shoes based on their needs and preferences.
+    {"role": "system", "content": """You are a helpful AI shopping assistant for a shoe store. Your goal is to help customers find the perfect shoes and gather their contact information when they show serious buying intent.
 
 PERSONALITY:
 - Be friendly, enthusiastic, and knowledgeable about shoes
@@ -248,8 +355,10 @@ CONVERSATION FLOW:
 2. Ask about their shoe needs (occasion, style, size, budget, etc.)
 3. Use the search tools to find matching shoes
 4. Present options with pros/cons
-5. Help them make a decision
-6. Offer alternatives if nothing matches perfectly
+5. **DETECT SERIOUS INTEREST** - Watch for buying signals
+6. **GATHER CONTACT INFO** when customer shows serious interest
+7. Help them make a decision
+8. Offer alternatives if nothing matches perfectly
 
 WHEN PRESENTING SHOES:
 - Always mention: name, brand, price, rating, availability
@@ -257,13 +366,29 @@ WHEN PRESENTING SHOES:
 - Group similar options together
 - Suggest alternatives if budget/preferences don't match
 
-SEARCH STRATEGY:
-- Start broad, then narrow down based on customer feedback
-- Always check availability and stock
-- Consider price range and value
-- Factor in ratings and reviews
+SERIOUS INTEREST INDICATORS:
+- Customer asks about pricing, availability, or sizes
+- Uses words like "buy", "purchase", "want this", "interested"
+- Asks about store location, pickup, or delivery
+- Asks "how much" or discusses budget
+- Says shoes are "perfect" or "exactly what I need"
+- Asks about trying on or fit
 
-Remember: You're here to help customers find shoes they'll love, not just make a sale!"""},
+CONTACT INFORMATION GATHERING:
+When you detect serious interest (2+ indicators), politely ask for contact information:
+1. Start with: "I'd love to help you with this purchase! Could I get your name so I can assist you better?"
+2. Collect: First name (required), Last name, Age, Phone number
+3. Be natural and conversational, not like a form
+4. Explain benefits: "This way I can follow up with you about availability and any special offers"
+5. Save information using the save_customer_info function
+
+CONTACT GATHERING SCRIPT:
+- "To help you with this purchase, could I get your first name?"
+- "And your last name?" 
+- "What's the best phone number to reach you at?"
+- "Just for our records, may I ask your age?" (optional)
+
+Remember: Only gather contact info when customer shows SERIOUS buying intent, not just browsing!"""},
 ]
 
 def format_shoe_presentation(shoes_data):
@@ -285,8 +410,65 @@ def format_shoe_presentation(shoes_data):
    • Status: {'✅ In Stock' if shoe['in_stock'] else '❌ Out of Stock'}
 """
             formatted_shoes.append(shoe_info)
+            
+            # Track interested products
+            if shoe['in_stock']:
+                customer_state["interested_products"].append(shoe['name'])
+        
         return "\n".join(formatted_shoes)
     return str(data)
+
+def process_user_message(user_input):
+    """Process user message and update customer state"""
+    customer_state["conversation_turns"] += 1
+    
+    # Check for serious interest indicators
+    if detect_serious_interest(user_input):
+        customer_state["serious_interest_indicators"] += 1
+    
+    # Extract any contact info from the message
+    extracted_contact = extract_contact_info(user_input)
+    customer_state["contact_info"].update(extracted_contact)
+    
+    # Handle contact info gathering flow
+    if customer_state["gathering_contact"]:
+        handle_contact_gathering(user_input)
+
+def handle_contact_gathering(user_input):
+    """Handle the contact information gathering process"""
+    current_step = customer_state["contact_step"]
+    
+    if current_step == "first_name":
+        # Extract first name (assume single word or first word)
+        name_words = user_input.strip().split()
+        if name_words:
+            customer_state["contact_info"]["first_name"] = name_words[0].title()
+            customer_state["contact_step"] = "last_name"
+    
+    elif current_step == "last_name":
+        name_words = user_input.strip().split()
+        if name_words:
+            customer_state["contact_info"]["last_name"] = name_words[-1].title()
+            customer_state["contact_step"] = "phone"
+    
+    elif current_step == "phone":
+        # Phone should be extracted by extract_contact_info function
+        if "phone" in customer_state["contact_info"]:
+            customer_state["contact_step"] = "age"
+    
+    elif current_step == "age":
+        # Age should be extracted by extract_contact_info function
+        customer_state["gathering_contact"] = False
+        customer_state["contact_step"] = None
+
+def should_request_contact_info():
+    """Determine if we should request contact information"""
+    return (
+        customer_state["serious_interest_indicators"] >= 2 and
+        not customer_state["contact_info_requested"] and
+        customer_state["conversation_turns"] >= 3 and
+        len(customer_state["interested_products"]) > 0
+    )
 
 def chat_shoe_assistant():
     print("👟 Welcome to our AI Shoe Shopping Assistant! 👟")
@@ -308,13 +490,42 @@ def chat_shoe_assistant():
         # Get user input
         user_input = input("\nYou: ")
         if user_input.lower() in ["quit", "exit", "bye"]:
+            # Save conversation history if we have contact info
+            if customer_state["contact_info"].get("first_name"):
+                try:
+                    save_result = save_customer_info(
+                        first_name=customer_state["contact_info"].get("first_name"),
+                        last_name=customer_state["contact_info"].get("last_name"),
+                        age=customer_state["contact_info"].get("age"),
+                        phone=customer_state["contact_info"].get("phone"),
+                        interested_products=list(set(customer_state["interested_products"])),
+                        conversation_history=[msg for msg in conversation_history if msg["role"] != "system"]
+                    )
+                    print("\n💾 Your information has been saved for follow-up!")
+                except Exception as e:
+                    print(f"\n⚠️ Note: Could not save conversation history: {e}")
+            
             print("\nAI Assistant: Thanks for shopping with us! Come back anytime! 👟✨")
             break
 
+        # Process the user message
+        process_user_message(user_input)
+        
         # Add user message to history
         conversation_history.append({"role": "user", "content": user_input})
 
         try:
+            # Check if we should request contact info
+            if should_request_contact_info():
+                customer_state["contact_info_requested"] = True
+                customer_state["gathering_contact"] = True
+                customer_state["contact_step"] = "first_name"
+                
+                print("\nAI Assistant: I can see you're really interested in some of our shoes! 😊")
+                print("To help you with your purchase and keep you updated about availability and special offers,")
+                print("could I get your first name?")
+                continue
+
             # Get AI response with tools
             response = client.chat.completions.create(
                 model=model,
