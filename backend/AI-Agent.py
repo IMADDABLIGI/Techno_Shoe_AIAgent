@@ -255,17 +255,17 @@ tools = [
         "type": "function",
         "function": {
             "name": "search_shoes",
-            "description": "Search for shoes based on customer preferences like brand, category, price range, color, gender, size, and rating",
+            "description": "Search for shoes based on customer preferences like brand, category, price range (in DH), color, gender, size (EU), and rating",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "brand": {"type": "string", "description": "Shoe brand (Nike, Adidas, Puma, etc.)"},
                     "category": {"type": "string", "description": "Shoe category (Running, Basketball, Casual, Training)"},
-                    "price_min": {"type": "number", "description": "Minimum price"},
-                    "price_max": {"type": "number", "description": "Maximum price"},
+                    "price_min": {"type": "number", "description": "Minimum price in DH"},
+                    "price_max": {"type": "number", "description": "Maximum price in DH"},
                     "color": {"type": "string", "description": "Shoe color"},
                     "gender": {"type": "string", "description": "Target gender (Men, Women, Unisex)"},
-                    "size": {"type": "number", "description": "Shoe size"},
+                    "size": {"type": "number", "description": "Shoe size (EU)"},
                     "in_stock_only": {"type": "boolean", "description": "Only show in-stock items", "default": True},
                     "min_rating": {"type": "number", "description": "Minimum rating (1-5)"}
                 }
@@ -300,12 +300,12 @@ tools = [
         "type": "function",
         "function": {
             "name": "check_shoe_availability",
-            "description": "Check if a specific shoe is available in a particular size",
+            "description": "Check if a specific shoe is available in a particular EU size",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "shoe_name": {"type": "string", "description": "Name of the shoe to check"},
-                    "size": {"type": "number", "description": "Shoe size to check"}
+                    "size": {"type": "number", "description": "Shoe size (EU) to check"}
                 }
             }
         }
@@ -342,17 +342,23 @@ available_functions = {
 
 # Initialize conversation history with enhanced e-commerce context
 conversation_history = [
-    {"role": "system", "content": """You are a helpful AI shopping assistant for a shoe store. Your goal is to help customers find the perfect shoes and gather their contact information when they show serious buying intent.
+    {"role": "system", "content": """You are Amine, a helpful AI shopping assistant for Techno Shoes in Casablanca Sidi Maarouf, Morocco. Your goal is to help customers find the perfect shoes and gather their contact information when they show serious buying intent.
+
+STORE INFORMATION:
+- Name: Techno Shoes
+- Location: Casablanca Sidi Maarouf, Morocco
+- Currency: Moroccan Dirham (DH)
+- Sizes: European sizes (36-47)
 
 PERSONALITY:
 - Be friendly, enthusiastic, and knowledgeable about shoes
 - Ask clarifying questions to understand customer needs
 - Provide personalized recommendations
-- Always mention key details like price, rating, and availability
+- Always mention key details like price (in DH), rating, and availability
 
 CONVERSATION FLOW:
 1. Greet the customer warmly
-2. Ask about their shoe needs (occasion, style, size, budget, etc.)
+2. Ask about their shoe needs (occasion, style, size (EU), budget in DH, etc.)
 3. Use the search tools to find matching shoes
 4. Present options with pros/cons
 5. **DETECT SERIOUS INTEREST** - Watch for buying signals
@@ -361,7 +367,7 @@ CONVERSATION FLOW:
 8. Offer alternatives if nothing matches perfectly
 
 WHEN PRESENTING SHOES:
-- Always mention: name, brand, price, rating, availability
+- Always mention: name, brand, price (in DH), rating, availability
 - Highlight what makes each shoe special
 - Group similar options together
 - Suggest alternatives if budget/preferences don't match
@@ -404,9 +410,9 @@ def format_shoe_presentation(shoes_data):
             shoe_info = f"""
 🔥 **{shoe['name']}**
    • Brand: {shoe['brand']} | Category: {shoe['category']}
-   • Price: ${shoe['price']} | Rating: {shoe['rating']}/5 ⭐
+   • Price: {shoe['price']} DH | Rating: {shoe['rating']}/5 ⭐
    • Color: {shoe['color']} | Gender: {shoe['gender']}
-   • Available Sizes: {', '.join(map(str, shoe['sizes']))}
+   • Available Sizes (EU): {', '.join(map(str, shoe['sizes']))}
    • Status: {'✅ In Stock' if shoe['in_stock'] else '❌ Out of Stock'}
 """
             formatted_shoes.append(shoe_info)
@@ -471,19 +477,19 @@ def should_request_contact_info():
     )
 
 def chat_shoe_assistant():
-    print("👟 Welcome to our AI Shoe Shopping Assistant! 👟")
+    print("👟 Welcome to Techno Shoes AI Assistant! 👟")
     print("Ask me about shoes and I'll help you find the perfect pair!")
     print("Type 'quit' to exit")
     print("-" * 60)
     
     # Start with a greeting
-    print("\nAI Assistant: Hello! Welcome to our shoe store! 👋")
-    print("I'm here to help you find the perfect shoes. What kind of shoes are you looking for today?")
+    print("\nAmine: Hello! Welcome to Techno Shoes in Casablanca Sidi Maarouf! 👋")
+    print("I'm Amine, your shoe shopping assistant. How can I help you find the perfect shoes today?")
     print("You can tell me about:")
     print("• The occasion (running, work, casual, sports)")
     print("• Your preferred brand or style")
-    print("• Your budget range")
-    print("• Your size and color preferences")
+    print("• Your budget range in DH")
+    print("• Your size (EU sizes from 36-47) and color preferences")
     print("• Or just ask for recommendations!")
     
     while True:
@@ -505,7 +511,7 @@ def chat_shoe_assistant():
                 except Exception as e:
                     print(f"\n⚠️ Note: Could not save conversation history: {e}")
             
-            print("\nAI Assistant: Thanks for shopping with us! Come back anytime! 👟✨")
+            print("\nAmine: Thanks for shopping with us at Techno Shoes! Come back anytime! 👟✨")
             break
 
         # Process the user message
@@ -521,7 +527,7 @@ def chat_shoe_assistant():
                 customer_state["gathering_contact"] = True
                 customer_state["contact_step"] = "first_name"
                 
-                print("\nAI Assistant: I can see you're really interested in some of our shoes! 😊")
+                print("\nAmine: I can see you're really interested in some of our shoes! 😊")
                 print("To help you with your purchase and keep you updated about availability and special offers,")
                 print("could I get your first name?")
                 continue
@@ -575,7 +581,7 @@ def chat_shoe_assistant():
                 )
                 
                 ai_reply = final_response.choices[0].message.content
-                print(f"\nAI Assistant: {ai_reply}")
+                print(f"\nAmine: {ai_reply}")
                 
                 # Add final response to history
                 conversation_history.append({"role": "assistant", "content": ai_reply})
@@ -583,7 +589,7 @@ def chat_shoe_assistant():
             else:
                 # No tool calls needed, just regular response
                 ai_reply = response_message.content
-                print(f"\nAI Assistant: {ai_reply}")
+                print(f"\nAmine: {ai_reply}")
                 
                 # Add AI reply to history
                 conversation_history.append({"role": "assistant", "content": ai_reply})
@@ -596,7 +602,7 @@ if __name__ == "__main__":
     try:
         chat_shoe_assistant()
     except KeyboardInterrupt:
-        print("\n\n👋 Thanks for visiting our shoe store! Have a great day!")
+        print("\n\n👋 Thanks for visiting Techno Shoes! Have a great day!")
     except Exception as e:
         print(f"\n❌ An error occurred: {str(e)}")
         print("Please check your database connection and try again.")

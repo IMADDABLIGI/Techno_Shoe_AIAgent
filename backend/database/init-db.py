@@ -23,17 +23,18 @@ def get_db_connection():
     return client[db_name]
 
 def generate_simple_shoes_data() -> List[Dict]:
-    """Generate a simple, clean dataset of shoes."""
+    """Generate a simple, clean dataset of shoes with European sizes and DH prices."""
     brands = ["Nike", "Adidas", "Puma", "Reebok", "New Balance"]
     categories = ["Running", "Basketball", "Casual", "Training"]
     colors = ["Black", "White", "Red", "Blue", "Gray"]
     genders = ["Men", "Women", "Unisex"]
-    sizes = [7, 8, 9, 10, 11]
+    # European sizes for adults (36-47)
+    sizes = list(range(36, 48))
     
     shoes_data = []
     
-    # Generate 50 shoes (much smaller dataset)
-    for i in range(50):
+    # Generate 100 shoes
+    for i in range(100):
         brand = random.choice(brands)
         category = random.choice(categories)
         
@@ -41,7 +42,7 @@ def generate_simple_shoes_data() -> List[Dict]:
             "name": f"{brand} {category} {i+1}",
             "brand": brand,
             "category": category,
-            "price": round(random.uniform(60, 150), 2),
+            "price": round(random.uniform(400, 1000), 2),  # Prices in DH
             "color": random.choice(colors),
             "sizes": random.sample(sizes, random.randint(3, 5)),
             "gender": random.choice(genders),
