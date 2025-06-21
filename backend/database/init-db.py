@@ -47,7 +47,8 @@ def generate_simple_shoes_data() -> List[Dict]:
             "sizes": random.sample(sizes, random.randint(3, 5)),
             "gender": random.choice(genders),
             "rating": round(random.uniform(3.5, 5.0), 1),
-            "in_stock": random.choice([True, False])
+            "in_stock": True
+            # "in_stock": random.choice([True, False])
         }
         
         shoes_data.append(shoe)

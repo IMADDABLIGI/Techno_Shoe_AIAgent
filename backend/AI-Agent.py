@@ -13,7 +13,7 @@ load_dotenv()
 # OpenAI Configuration
 token = os.environ["GITHUB_TOKEN"]
 endpoint = "https://models.github.ai/inference"
-model = "openai/gpt-4.1-nano"
+model = "openai/gpt-4o"
 
 client = OpenAI(
     base_url=endpoint,
