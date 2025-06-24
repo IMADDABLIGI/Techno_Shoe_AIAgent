@@ -283,7 +283,7 @@ function App() {
       <footer className="bg-white/10 backdrop-blur-md border-t border-white/20 py-4">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <p className="text-white/80 text-sm">
-            Powered by AI • Techno Shoes © 2024 • Casablanca, Morocco
+            Techno Shoes © 2024 • Casablanca, Morocco
           </p>
         </div>
       </footer>
