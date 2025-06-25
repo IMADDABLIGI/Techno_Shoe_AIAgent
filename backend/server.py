@@ -18,7 +18,7 @@ CORS(app)
 # OpenAI Configuration
 token = os.environ["GITHUB_TOKEN"]
 endpoint = "https://models.github.ai/inference"
-model = "openai/gpt-4o"
+model = "openai/gpt-4.1"
 
 client = OpenAI(
     base_url=endpoint,
@@ -33,7 +33,7 @@ def get_db_connection():
         print("✅ Connected to MongoDB successfully!")
     except Exception as e:
         raise Exception(f"❌ Could not connect to MongoDB: {e}")
-    
+
     db_name = os.getenv("DB_NAME")
     return mongo_client[db_name]
 
@@ -50,18 +50,18 @@ def get_shoe_image_url(shoe_name, brand):
     return f"https://via.placeholder.com/300x200/4F46E5/FFFFFF?text={brand}+{shoe_type.title()}"
 
 # Tool Functions
-def search_shoes(brand=None, category=None, price_min=None, price_max=None, color=None, 
+def search_shoes(brand=None, category=None, price_min=None, price_max=None, color=None,
                 gender=None, size=None, in_stock_only=True, min_rating=None):
     """Search for shoes in the database based on various criteria"""
     try:
         query_filter = {}
-        
+
         if brand:
             query_filter["brand"] = {"$regex": brand, "$options": "i"}
-        
+
         if category:
             query_filter["category"] = {"$regex": category, "$options": "i"}
-        
+
         if price_min is not None or price_max is not None:
             price_filter = {}
             if price_min is not None:
@@ -69,41 +69,41 @@ def search_shoes(brand=None, category=None, price_min=None, price_max=None, colo
             if price_max is not None:
                 price_filter["$lte"] = float(price_max)
             query_filter["price"] = price_filter
-        
+
         if color:
             query_filter["color"] = {"$regex": color, "$options": "i"}
-        
+
         if gender:
             query_filter["gender"] = {"$regex": gender, "$options": "i"}
-        
+
         if size:
             query_filter["sizes"] = int(size)
-        
+
         if in_stock_only:
             query_filter["in_stock"] = True
-        
+
         if min_rating is not None:
             query_filter["rating"] = {"$gte": float(min_rating)}
-        
+
         results = list(db.shoes.find(query_filter).limit(10))
-        
+
         # Add image URLs and convert ObjectId to string
         for result in results:
             result["_id"] = str(result["_id"])
             result["image_url"] = get_shoe_image_url(result["name"], result["brand"])
-        
+
         if not results:
             return json.dumps({
                 "message": "No shoes found matching your criteria.",
                 "suggestions": "Try adjusting your requirements or check our full catalog."
             })
-        
+
         return json.dumps({
             "found_shoes": len(results),
             "shoes": results,
             "message": f"Found {len(results)} shoes matching your criteria!"
         })
-        
+
     except Exception as e:
         return json.dumps({"error": f"Database search error: {str(e)}"})
 
@@ -115,19 +115,19 @@ def get_shoe_recommendations(preferences=None):
             {"$sort": {"rating": -1, "price": 1}},
             {"$limit": 8}
         ]
-        
+
         results = list(db.shoes.aggregate(pipeline))
-        
+
         # Add image URLs and convert ObjectId to string
         for result in results:
             result["_id"] = str(result["_id"])
             result["image_url"] = get_shoe_image_url(result["name"], result["brand"])
-        
+
         return json.dumps({
             "recommendations": results,
             "message": "Here are our top-rated shoes currently in stock!"
         })
-        
+
     except Exception as e:
         return json.dumps({"error": f"Recommendation error: {str(e)}"})
 
@@ -137,14 +137,14 @@ def get_brands_and_categories():
         brands = db.shoes.distinct("brand")
         categories = db.shoes.distinct("category")
         colors = db.shoes.distinct("color")
-        
+
         return json.dumps({
             "available_brands": brands,
             "available_categories": categories,
             "available_colors": colors,
             "message": "Here's what we have available in our store!"
         })
-        
+
     except Exception as e:
         return json.dumps({"error": f"Catalog error: {str(e)}"})
 
@@ -152,32 +152,32 @@ def check_shoe_availability(shoe_name=None, size=None):
     """Check if a specific shoe is available in a specific size"""
     try:
         query_filter = {}
-        
+
         if shoe_name:
             query_filter["name"] = {"$regex": shoe_name, "$options": "i"}
-        
+
         if size:
             query_filter["sizes"] = int(size)
-        
+
         query_filter["in_stock"] = True
-        
+
         results = list(db.shoes.find(query_filter))
-        
+
         # Add image URLs and convert ObjectId to string
         for result in results:
             result["_id"] = str(result["_id"])
             result["image_url"] = get_shoe_image_url(result["name"], result["brand"])
-        
+
         return json.dumps({
             "available": len(results) > 0,
             "shoes": results,
             "message": f"{'Available!' if results else 'Sorry, not available in that size.'}"
         })
-        
+
     except Exception as e:
         return json.dumps({"error": f"Availability check error: {str(e)}"})
 
-def save_customer_info(first_name, last_name=None, age=None, phone=None, 
+def save_customer_info(first_name, last_name=None, age=None, phone=None,
                       interested_products=None, conversation_history=None):
     """Save customer information to the database"""
     try:
@@ -190,17 +190,17 @@ def save_customer_info(first_name, last_name=None, age=None, phone=None,
             "conversation_history": conversation_history or [],
             "created_at": datetime.now()
         }
-        
+
         customer_data = {k: v for k, v in customer_data.items() if v is not None}
-        
+
         result = db.customers.insert_one(customer_data)
-        
+
         return json.dumps({
             "success": True,
             "customer_id": str(result.inserted_id),
             "message": "Customer information saved successfully!"
         })
-        
+
     except Exception as e:
         return json.dumps({
             "success": False,
@@ -296,8 +296,8 @@ available_functions = {
 
 def get_system_message():
     return {
-        "role": "system", 
-        "content": """You are Amine, a helpful AI shopping assistant for Techno Shoes in Casablanca Sidi Maarouf, Morocco. 
+        "role": "system",
+        "content": """You are Amine, a helpful AI shopping assistant for Techno Shoes in Casablanca Sidi Maarouf, Morocco.
 
 STORE INFO:
 - Name: Techno Shoes
@@ -325,7 +325,7 @@ def chat():
         data = request.json
         user_message = data.get('message', '')
         session_id = data.get('session_id', 'default')
-        
+
         # Initialize or get session
         if session_id not in customer_sessions:
             customer_sessions[session_id] = {
@@ -337,13 +337,13 @@ def chat():
                     "contact_info": {}
                 }
             }
-        
+
         session = customer_sessions[session_id]
         conversation_history = session["conversation_history"]
-        
+
         # Add user message to history
         conversation_history.append({"role": "user", "content": user_message})
-        
+
         # Get AI response
         response = client.chat.completions.create(
             model=model,
@@ -353,21 +353,21 @@ def chat():
             temperature=0.7,
             top_p=0.9,
         )
-        
+
         response_message = response.choices[0].message
         shoes_data = None
-        
+
         # Handle tool calls
         if response_message.tool_calls:
             conversation_history.append(response_message)
-            
+
             for tool_call in response_message.tool_calls:
                 function_name = tool_call.function.name
                 function_args = json.loads(tool_call.function.arguments)
-                
+
                 if function_name in available_functions:
                     function_response = available_functions[function_name](**function_args)
-                    
+
                     # Parse shoes data for frontend
                     if function_name in ["search_shoes", "get_shoe_recommendations", "check_shoe_availability"]:
                         try:
@@ -378,14 +378,14 @@ def chat():
                             pass
                 else:
                     function_response = f"Error: Function {function_name} not found"
-                
+
                 conversation_history.append({
                     "tool_call_id": tool_call.id,
                     "role": "tool",
                     "name": function_name,
                     "content": function_response
                 })
-            
+
             # Get final response
             final_response = client.chat.completions.create(
                 model=model,
@@ -393,19 +393,22 @@ def chat():
                 temperature=0.7,
                 top_p=0.9,
             )
-            
+
             ai_reply = final_response.choices[0].message.content
             conversation_history.append({"role": "assistant", "content": ai_reply})
         else:
             ai_reply = response_message.content
             conversation_history.append({"role": "assistant", "content": ai_reply})
-        
+
+        print("-----", ai_reply, "-----")
+        print("------------------")
+        print("-----", shoes_data, "-----")
         return jsonify({
             "message": ai_reply,
             "shoes_data": shoes_data,
             "session_id": session_id
         })
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
