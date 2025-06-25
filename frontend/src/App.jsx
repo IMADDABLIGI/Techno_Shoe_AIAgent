@@ -10,76 +10,76 @@ const ShoeCard = ({ shoe, onAddToCart }) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+        className={`w-3 h-3 sm:w-4 sm:h-4 ${i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
       />
     ));
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl bounce-in h-full flex flex-col">
+    <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl bounce-in h-full flex flex-col">
       <div className="relative">
         <img
           src={shoe.image}
           alt={shoe.name}
-          className="w-full h-48 object-cover"
+          className="w-full h-36 sm:h-48 object-cover"
         />
-        <div className="absolute top-4 right-4">
-          <button className="bg-white/80 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-colors">
-            <Heart className="w-5 h-5 text-gray-600 hover:text-red-500" />
+        <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
+          <button className="bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 rounded-full hover:bg-white transition-colors">
+            <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-red-500" />
           </button>
         </div>
         {shoe.in_stock && (
-          <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-green-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
             In Stock
           </div>
         )}
       </div>
       
-      <div className="p-6 flex flex-col flex-grow">
+      <div className="p-3 sm:p-6 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-lg text-gray-800 leading-tight">{shoe.name}</h3>
-          <span className="text-2xl font-bold text-indigo-600">{shoe.price} DH</span>
+          <h3 className="font-bold text-sm sm:text-lg text-gray-800 leading-tight pr-2">{shoe.name}</h3>
+          <span className="text-lg sm:text-2xl font-bold text-indigo-600 whitespace-nowrap">{shoe.price} DH</span>
         </div>
         
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+          <span className="text-xs sm:text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 sm:px-3 sm:py-1 rounded-full">
             {shoe.brand}
           </span>
           <div className="flex items-center space-x-1">
             {renderStars(shoe.rating)}
-            <span className="text-sm text-gray-600 ml-1">({shoe.rating})</span>
+            <span className="text-xs sm:text-sm text-gray-600 ml-1">({shoe.rating})</span>
           </div>
         </div>
         
-        <div className="grid grid-cols-2 gap-4 mb-4 text-sm flex-grow">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4 text-xs sm:text-sm flex-grow">
           <div>
             <span className="text-gray-500">Category:</span>
-            <p className="font-medium text-gray-800">{shoe.category}</p>
+            <p className="font-medium text-gray-800 text-xs sm:text-sm">{shoe.category}</p>
           </div>
           <div>
             <span className="text-gray-500">Color:</span>
-            <p className="font-medium text-gray-800">{shoe.color}</p>
+            <p className="font-medium text-gray-800 text-xs sm:text-sm">{shoe.color}</p>
           </div>
           <div>
             <span className="text-gray-500">Gender:</span>
-            <p className="font-medium text-gray-800">{shoe.gender}</p>
+            <p className="font-medium text-gray-800 text-xs sm:text-sm">{shoe.gender}</p>
           </div>
           <div>
             <span className="text-gray-500">Sizes:</span>
-            <p className="font-medium text-[13px] text-gray-800">{shoe.sizes.join(', ')}</p>
+            <p className="font-medium text-xs text-gray-800">{shoe.sizes.join(', ')}</p>
           </div>
         </div>
         
         <button
           onClick={() => onAddToCart(shoe)}
           disabled={!shoe.in_stock}
-          className={`w-full py-3 px-4 rounded-xl font-semibold flex items-center justify-center space-x-2 transition-all mt-auto ${
+          className={`w-full py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-semibold flex items-center justify-center space-x-2 transition-all mt-auto text-sm sm:text-base ${
             shoe.in_stock
-              ? 'bg-indigo-600 hover:bg-indigo-700 text-white transform hover:scale-105'
+              ? 'bg-indigo-600 hover:bg-indigo-700 text-white transform hover:scale-105 active:scale-95'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          <ShoppingCart className="w-5 h-5" />
+          <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
           <span>{shoe.in_stock ? 'Add to Cart' : 'Out of Stock'}</span>
         </button>
       </div>
@@ -89,23 +89,23 @@ const ShoeCard = ({ shoe, onAddToCart }) => {
 
 const ChatMessage = ({ message, isUser, shoes }) => {
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6 slide-in`}>
-      <div className={`flex max-w-4xl ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start space-x-3`}>
-        <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-          isUser ? 'bg-indigo-600 ml-3' : 'bg-orange-500 mr-3'
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 sm:mb-6 slide-in`}>
+      <div className={`flex max-w-full sm:max-w-4xl ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 sm:space-x-3`}>
+        <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${
+          isUser ? 'bg-indigo-600 ml-2 sm:ml-3' : 'bg-orange-500 mr-2 sm:mr-3'
         }`}>
-          {isUser ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
+          {isUser ? <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" /> : <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />}
         </div>
         
-        <div className={`rounded-2xl px-6 py-4 ${
+        <div className={`rounded-xl sm:rounded-2xl px-3 py-3 sm:px-6 sm:py-4 max-w-[85%] sm:max-w-none ${
           isUser 
             ? 'bg-indigo-600 text-white' 
             : 'bg-white text-gray-800 shadow-lg'
         }`}>
-          <p className="leading-relaxed whitespace-pre-wrap">{message}</p>
+          <p className="leading-relaxed whitespace-pre-wrap text-xs sm:text-base">{message}</p>
           
           {shoes && shoes.length > 0 && (
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {shoes.map((shoe, index) => (
                 <ShoeCard
                   key={shoe._id || index}
@@ -145,7 +145,6 @@ function App() {
       shoes: null
     }]);
   }, []);
-
 
   // Sending a message to the backend
   const sendMessage = async () => {
@@ -201,39 +200,39 @@ function App() {
 
   useEffect(() => {
     if (!isLoading) {
-      textareaRef.current.focus();
+      textareaRef.current?.focus();
     }
   }, [isLoading]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 via-purple-500 to-orange-400">
       {/* Header */}
       <header className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-orange-500 p-2 rounded-xl">
-                <ShoppingBag className="w-8 h-8 text-white" />
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="bg-orange-500 p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
+                <ShoppingBag className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Techno Shoes</h1>
-                <p className="text-white/80 text-sm">Casablanca Sidi Maarouf</p>
+                <h1 className="text-lg sm:text-2xl font-bold text-white">Techno Shoes</h1>
+                <p className="text-white/80 text-xs sm:text-sm">Casablanca Sidi Maarouf</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-white font-medium">Chat with Amine</p>
-              <p className="text-white/80 text-sm">Your AI Shopping Assistant</p>
+              <p className="text-white font-medium text-xs sm:text-base">Chat with Amine</p>
+              <p className="text-white/80 text-[10px] sm:text-sm">AI Shopping Assistant</p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Chat Container */}
-      <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
-        <div className="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 h-full flex flex-col">
+      <div className="flex-1 max-w-6xl mx-auto w-full px-2 sm:px-4 py-3 sm:py-6">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 h-full flex flex-col">
           
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
             {messages.map((msg) => (
               <ChatMessage
                 key={msg.id}
@@ -243,12 +242,12 @@ function App() {
               />
             ))}
             {isLoading && (
-              <div className="flex justify-start mb-6">
-                <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-white" />
+              <div className="flex justify-start mb-4 sm:mb-6">
+                <div className="flex items-start space-x-2 sm:space-x-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                    <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <div className="bg-white rounded-2xl px-6 py-4 shadow-lg">
+                  <div className="bg-white rounded-xl sm:rounded-2xl px-4 py-3 sm:px-6 sm:py-4 shadow-lg">
                     <div className="flex space-x-2">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -262,29 +261,29 @@ function App() {
           </div>
 
           {/* Input */}
-          <div className="p-6 border-t border-white/20">
-            <div className="flex space-x-4">
+          <div className="p-3 sm:p-6 border-t border-white/20">
+            <div className="flex space-x-2 sm:space-x-4">
               <textarea
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me about shoes, brands, sizes, or anything else..."
-                className="flex-1 bg-white rounded-2xl px-6 py-4 text-gray-800 placeholder-gray-500 resize-none focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-lg"
-                rows="2"
+                placeholder="Ask me about shoes..."
+                className="flex-1 bg-white rounded-xl sm:rounded-2xl px-3 py-2 sm:px-6 sm:py-4 text-gray-800 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 sm:focus:ring-4 focus:ring-indigo-300 shadow-lg text-xs sm:text-base"
+                rows="1"
                 disabled={isLoading}
                 ref={textareaRef}
               />
               <button
                 onClick={sendMessage}
                 disabled={!inputMessage.trim() || isLoading}
-                className={`px-8 py-4 rounded-2xl font-semibold flex items-center space-x-2 transition-all transform ${
+                className={`px-3 py-2 sm:px-8 sm:py-4 rounded-xl sm:rounded-2xl font-semibold flex items-center space-x-1 sm:space-x-2 transition-all transform text-xs sm:text-base ${
                   inputMessage.trim() && !isLoading
-                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105 shadow-lg'
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105 active:scale-95 shadow-lg'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                <Send className="w-5 h-5" />
-                <span>Send</span>
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Send</span>
               </button>
             </div>
           </div>
@@ -292,9 +291,9 @@ function App() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white/10 backdrop-blur-md border-t border-white/20 py-4">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-white/80 text-sm">
+      <footer className="bg-white/10 backdrop-blur-md border-t border-white/20 py-3 sm:py-4">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 text-center">
+          <p className="text-white/80 text-xs sm:text-sm">
             Techno Shoes © 2024 • Casablanca, Morocco
           </p>
         </div>
