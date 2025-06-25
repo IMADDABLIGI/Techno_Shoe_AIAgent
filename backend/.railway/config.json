@@ -3,6 +3,10 @@
     "builder": "nixpacks",
     "buildCommand": "pip install -r requirements.txt"
   },
+  "start": {
+    "start": "python3 server.py",
+    "watchPatterns": ["backend/**"]
+  },
   "run": {
     "command": "python3 server.py",
     "watchPatterns": ["backend/**"]
