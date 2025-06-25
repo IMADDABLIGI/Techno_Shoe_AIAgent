@@ -15,10 +15,10 @@ const ShoeCard = ({ shoe, onAddToCart }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl bounce-in">
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl bounce-in h-full flex flex-col">
       <div className="relative">
         <img
-          src={shoe.image_url}
+          src={shoe.image}
           alt={shoe.name}
           className="w-full h-48 object-cover"
         />
@@ -34,7 +34,7 @@ const ShoeCard = ({ shoe, onAddToCart }) => {
         )}
       </div>
       
-      <div className="p-6">
+      <div className="p-6 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-bold text-lg text-gray-800 leading-tight">{shoe.name}</h3>
           <span className="text-2xl font-bold text-indigo-600">{shoe.price} DH</span>
@@ -50,7 +50,7 @@ const ShoeCard = ({ shoe, onAddToCart }) => {
           </div>
         </div>
         
-        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+        <div className="grid grid-cols-2 gap-4 mb-4 text-sm flex-grow">
           <div>
             <span className="text-gray-500">Category:</span>
             <p className="font-medium text-gray-800">{shoe.category}</p>
@@ -65,14 +65,14 @@ const ShoeCard = ({ shoe, onAddToCart }) => {
           </div>
           <div>
             <span className="text-gray-500">Sizes:</span>
-            <p className="font-medium text-gray-800">{shoe.sizes.join(', ')}</p>
+            <p className="font-medium text-[13px] text-gray-800">{shoe.sizes.join(', ')}</p>
           </div>
         </div>
         
         <button
           onClick={() => onAddToCart(shoe)}
           disabled={!shoe.in_stock}
-          className={`w-full py-3 px-4 rounded-xl font-semibold flex items-center justify-center space-x-2 transition-all ${
+          className={`w-full py-3 px-4 rounded-xl font-semibold flex items-center justify-center space-x-2 transition-all mt-auto ${
             shoe.in_stock
               ? 'bg-indigo-600 hover:bg-indigo-700 text-white transform hover:scale-105'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -145,6 +145,8 @@ function App() {
     }]);
   }, []);
 
+
+  // Sending a message to the backend
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
@@ -193,6 +195,14 @@ function App() {
       sendMessage();
     }
   };
+
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (!isLoading) {
+      textareaRef.current.focus();
+    }
+  }, [isLoading]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -261,6 +271,7 @@ function App() {
                 className="flex-1 bg-white rounded-2xl px-6 py-4 text-gray-800 placeholder-gray-500 resize-none focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-lg"
                 rows="2"
                 disabled={isLoading}
+                ref={textareaRef}
               />
               <button
                 onClick={sendMessage}
