@@ -18,7 +18,7 @@ CORS(app)
 # OpenAI Configuration
 token = os.environ["GITHUB_TOKEN"]
 endpoint = "https://models.github.ai/inference"
-model = "openai/gpt-4.1"
+model = "openai/gpt-4.1-mini"
 
 client = OpenAI(
     base_url=endpoint,
@@ -305,19 +305,60 @@ STORE INFO:
 - Currency: Moroccan Dirham (DH)
 - Sizes: European sizes (36-47)
 
-PERSONALITY: Be friendly, enthusiastic, and knowledgeable. Always mention price (DH), rating, and availability.
+PERSONALITY: Be friendly, enthusiastic, and knowledgeable.
 
-IMPORTANT: When presenting shoes, format your response to clearly indicate when you're showing product data by using the phrase "SHOES_DATA:" followed by the shoe information. This helps the frontend display products properly.
+CRITICAL INSTRUCTIONS FOR FRONTEND INTEGRATION:
+1. Your responses are sent to a frontend application that handles data display separately
+2. NEVER include raw shoe data (JSON objects, detailed product specs) in your conversational responses
+3. When you use tools to fetch shoe data, the frontend automatically receives and displays this data
+4. Your role is to provide conversational context and guidance, NOT to display product details
+5. Instead of showing product details, refer to them conversationally like:
+   - "I found some great options for you!"
+   - "Here are [X] shoes that match your criteria"
+   - "The products are now displayed for you to browse"
+   - "Take a look at these recommendations"
 
-Example format:
-"Here are some great options for you!
+EXAMPLE GOOD RESPONSES:
+- "I found 5 Nike sneakers in your size! Take a look at the options displayed."
+- "Here are our top-rated shoes currently available. What do you think?"
+- "Perfect! I found some great running shoes within your budget."
 
-SHOES_DATA:
-[The shoe data will be processed by the system]
+EXAMPLE BAD RESPONSES (DON'T DO THIS):
+- Including shoe names, prices, or detailed specs in your text
+- Listing product information like "Nike Air Max - 850 DH - Rating: 4.5"
+- Showing JSON data or structured product information
 
-Would you like to know more about any of these shoes?"
-"""
+Remember: Be conversational and helpful, but let the frontend handle all product data display!"""
     }
+
+def clean_ai_response(ai_reply, shoes_data):
+    """
+    Clean the AI response to ensure no shoe data leaks into the conversational text
+    """
+    if not shoes_data:
+        return ai_reply
+    
+    # Remove any potential product data patterns from the response
+    # This is a safety net in case the LLM still includes product info
+    
+    # Pattern to match common product data formats
+    patterns_to_remove = [
+        r'\{[^}]*"name"[^}]*\}',  # JSON-like objects with "name" field
+        r'\{[^}]*"price"[^}]*\}',  # JSON-like objects with "price" field
+        r'\{[^}]*"brand"[^}]*\}',  # JSON-like objects with "brand" field
+        r'SHOES_DATA:.*?(?=\n\n|\n[A-Z]|$)',  # SHOES_DATA sections
+        r'\[.*?"_id".*?\]',  # Arrays with _id fields
+    ]
+    
+    cleaned_response = ai_reply
+    for pattern in patterns_to_remove:
+        cleaned_response = re.sub(pattern, '', cleaned_response, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Clean up any extra whitespace or newlines left behind
+    cleaned_response = re.sub(r'\n\s*\n\s*\n', '\n\n', cleaned_response)
+    cleaned_response = cleaned_response.strip()
+    
+    return cleaned_response
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -374,6 +415,8 @@ def chat():
                             parsed_response = json.loads(function_response)
                             if "shoes" in parsed_response:
                                 shoes_data = parsed_response["shoes"]
+                            elif "recommendations" in parsed_response:
+                                shoes_data = parsed_response["recommendations"]
                         except:
                             pass
                 else:
@@ -400,11 +443,14 @@ def chat():
             ai_reply = response_message.content
             conversation_history.append({"role": "assistant", "content": ai_reply})
 
-        print("-----", ai_reply, "-----")
-        print("------------------")
-        print("-----", shoes_data, "-----")
+        # Clean the AI response to ensure no product data leaks through
+        clean_reply = clean_ai_response(ai_reply, shoes_data)
+
+        # print("-----", clean_reply, "-----")
+        # print("------------------")
+        # print("-----", shoes_data, "-----")
         return jsonify({
-            "message": ai_reply,
+            "message": clean_reply,
             "shoes_data": shoes_data,
             "session_id": session_id
         })
