@@ -3,7 +3,6 @@ import { Send, Bot, User, ShoppingBag, Star, Heart, ShoppingCart } from 'lucide-
 import axios from 'axios';
 
 // const API_URL = 'http://localhost:5000/api';
-
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ShoeCard = ({ shoe, onAddToCart }) => {
