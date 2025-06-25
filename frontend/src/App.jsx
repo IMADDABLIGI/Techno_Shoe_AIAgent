@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, ShoppingBag, Star, Heart, ShoppingCart } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+// const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ShoeCard = ({ shoe, onAddToCart }) => {
   const renderStars = (rating) => {
@@ -162,7 +163,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/chat`, {
+      const response = await axios.post(`${API_URL}`, {
         message: inputMessage,
         session_id: sessionId
       });
