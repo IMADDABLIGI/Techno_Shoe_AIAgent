@@ -18,7 +18,7 @@ CORS(app)
 # OpenAI Configuration
 token = os.environ["GITHUB_TOKEN"]
 endpoint = "https://models.github.ai/inference"
-model = "openai/gpt-4.1-mini"
+model = "openai/gpt-4.o"
 
 client = OpenAI(
     base_url=endpoint,
