@@ -290,6 +290,7 @@ function App() {
         </div>
       </div>
 
+
       {/* Footer */}
       <footer className="bg-white/10 backdrop-blur-md border-t border-white/20 py-3 sm:py-4">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 text-center">
