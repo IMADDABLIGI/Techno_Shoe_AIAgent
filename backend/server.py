@@ -297,10 +297,10 @@ available_functions = {
 def get_system_message():
     return {
         "role": "system",
-        "content": """You are Amine, a helpful AI shopping assistant for Techno Shoes in Casablanca Sidi Maarouf, Morocco.
+        "content": """You are Amine, a helpful AI shopping assistant for Techno Shoe in Casablanca Sidi Maarouf, Morocco.
 
 STORE INFO:
-- Name: Techno Shoes
+- Name: Techno Shoe
 - Location: Casablanca Sidi Maarouf, Morocco
 - Currency: Moroccan Dirham (DH)
 - Sizes: European sizes (36-47)
@@ -460,7 +460,7 @@ def chat():
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    return jsonify({"status": "healthy", "message": "Techno Shoes API is running!"})
+    return jsonify({"status": "healthy", "message": "Techno Shoe API is running!"})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
