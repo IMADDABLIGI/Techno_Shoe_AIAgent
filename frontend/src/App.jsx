@@ -140,7 +140,7 @@ function App() {
     // Welcome message
     setMessages([{
       id: 1,
-      message: "Hello! Welcome to Techno Shoes in Casablanca Sidi Maarouf! 👋\n\nI'm Amine, your shoe shopping assistant. How can I help you find the perfect shoes today?\n\nYou can tell me about:\n• The occasion (running, work, casual, sports)\n• Your preferred brand or style\n• Your budget range in DH\n• Your size (EU sizes from 36-47) and color preferences\n• Or just ask for recommendations!",
+      message: "Hello! Welcome to Techno Shoe in Casablanca Sidi Maarouf! 👋\n\nI'm Amine, your shoe shopping assistant. How can I help you find the perfect shoes today?\n\nYou can tell me about:\n• The occasion (running, work, casual, sports)\n• Your preferred brand or style\n• Your budget range in DH\n• Your size (EU sizes from 36-47) and color preferences\n• Or just ask for recommendations!",
       isUser: false,
       shoes: null
     }]);
@@ -215,7 +215,7 @@ function App() {
                 <ShoppingBag className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-2xl font-bold text-white">Techno Shoes</h1>
+                <h1 className="text-lg sm:text-2xl font-bold text-white">Techno Shoe</h1>
                 <p className="text-white/80 text-xs sm:text-sm">Casablanca Sidi Maarouf</p>
               </div>
             </div>
@@ -295,7 +295,7 @@ function App() {
       <footer className="bg-white/10 backdrop-blur-md border-t border-white/20 py-3 sm:py-4">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 text-center">
           <p className="text-white/80 text-xs sm:text-sm">
-            Techno Shoes © 2024 • Casablanca, Morocco
+            Techno Shoe © 2024 • Casablanca, Morocco
           </p>
         </div>
       </footer>
