@@ -16,9 +16,11 @@ app = Flask(__name__)
 CORS(app)
 
 # OpenAI Configuration
+current_model_index = 0
+ai_models = ["openai/gpt-4.1", "openai/gpt-4.1-mini", "openai/gpt-4.1-nano", "openai/gpt-4o", "openai/gpt-4o-mini", "openai/o4-mini"]
 token = os.environ["GITHUB_TOKEN"]
 endpoint = "https://models.github.ai/inference"
-model = "openai/gpt-4.1"
+model = ai_models[current_model_index]
 
 client = OpenAI(
     base_url=endpoint,
@@ -362,10 +364,13 @@ def clean_ai_response(ai_reply, shoes_data):
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
+    global model, current_model_index
     try:
         data = request.json
         user_message = data.get('message', '')
         session_id = data.get('session_id', 'default')
+
+        # print("-----", model, "-----", user_message, "-----")
 
         # Initialize or get session
         if session_id not in customer_sessions:
@@ -456,6 +461,17 @@ def chat():
         })
 
     except Exception as e:
+        # global current_model_index
+        if current_model_index ==  len(ai_models) - 1:
+            current_model_index = 0
+        else:
+            # Rotate to the next model in case of an error
+            current_model_index += 1
+            print(f"Error with model {model}: {e}. Switching to next model.")
+            model = ai_models[current_model_index]
+            # client.model = model
+            # Increment the model index and wrap around if necessary
+
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/health', methods=['GET'])
