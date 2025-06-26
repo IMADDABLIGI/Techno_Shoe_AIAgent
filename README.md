@@ -4,19 +4,21 @@ A smart ecommerce platform featuring **Amine**, an AI-powered shopping assistant
 
 ## 🌟 Live Demo
 
-**[Visit Techno Shoe AI Agent](https://techno-shoe-ai-agent.vercel.app/)**
+<a href="https://techno-shoe-ai-agent.vercel.app/" target="_blank" rel="noopener noreferrer" style="font-weight: 600; text-decoration: none; color: #0969da;">  
+  <strong>Visit Techno Shoe AI Agent ↗</strong>  
+</a> 
 
 ## 🖼️ Project Preview
 
 <table>
   <tr>
     <td width="50%">
-      <img src="./frontend/src/assets/screenShot.png" alt="Welcome Screen - Meet Amine" style="width:100%">
       <p style="text-align:center"><em>Welcome Screen - Meet Amine</em></p>
+      <img src="./frontend/src/assets/screenShot.png" alt="Welcome Screen - Meet Amine" style="width:100%">
     </td>
     <td width="50%">
-      <img src="./frontend/src/assets/screenShot2.png" alt="AI-Powered Search Results" style="width:100%">
       <p style="text-align:center"><em>AI-Powered Search Results</em></p>
+      <img src="./frontend/src/assets/screenShot2.png" alt="AI-Powered Search Results" style="width:100%">
     </td>
   </tr>
 </table>
