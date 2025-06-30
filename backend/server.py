@@ -45,12 +45,6 @@ db = get_db_connection()
 # Store customer sessions
 customer_sessions = {}
 
-def get_shoe_image_url(shoe_name, brand):
-    """Generate a placeholder image URL for shoes"""
-    # In a real app, you'd have actual product images
-    shoe_type = "sneaker" if any(word in shoe_name.lower() for word in ["air", "running", "sport"]) else "shoe"
-    return f"https://via.placeholder.com/300x200/4F46E5/FFFFFF?text={brand}+{shoe_type.title()}"
-
 # Tool Functions
 def search_shoes(brand=None, category=None, price_min=None, price_max=None, color=None,
                 gender=None, size=None, in_stock_only=True, min_rating=None):
@@ -89,10 +83,9 @@ def search_shoes(brand=None, category=None, price_min=None, price_max=None, colo
 
         results = list(db.shoes.find(query_filter).limit(10))
 
-        # Add image URLs and convert ObjectId to string
+        # Convert ObjectId to string
         for result in results:
             result["_id"] = str(result["_id"])
-            result["image_url"] = get_shoe_image_url(result["name"], result["brand"])
 
         if not results:
             return json.dumps({
@@ -120,10 +113,9 @@ def get_shoe_recommendations(preferences=None):
 
         results = list(db.shoes.aggregate(pipeline))
 
-        # Add image URLs and convert ObjectId to string
+       # Convert ObjectId to string
         for result in results:
             result["_id"] = str(result["_id"])
-            result["image_url"] = get_shoe_image_url(result["name"], result["brand"])
 
         return json.dumps({
             "recommendations": results,
@@ -165,10 +157,9 @@ def check_shoe_availability(shoe_name=None, size=None):
 
         results = list(db.shoes.find(query_filter))
 
-        # Add image URLs and convert ObjectId to string
+        # Convert ObjectId to string
         for result in results:
             result["_id"] = str(result["_id"])
-            result["image_url"] = get_shoe_image_url(result["name"], result["brand"])
 
         return json.dumps({
             "available": len(results) > 0,
@@ -365,6 +356,7 @@ def clean_ai_response(ai_reply, shoes_data):
 @app.route('/api/chat', methods=['POST'])
 def chat():
     global model, current_model_index
+    print("-------------- AI model: ", model, " --------------")
     try:
         data = request.json
         user_message = data.get('message', '')
